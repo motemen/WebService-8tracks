@@ -1,27 +1,23 @@
-This is Perl module WebService::8tracks.
+NAME
+    WebService::8tracks
 
-INSTALLATION
+SYNOPSIS
+    use WebService::8tracks;
 
-WebService::8tracks installation is straightforward. If your CPAN shell is set up,
-you should just be able to do
+    my $api = WebService::8tracks->new(
+        accesskey => 'your accesskey',
+        secretkey => 'your secretkey',
+    );
+    
+    # exploring
+    $api->mixes({ sort => 'recent' });
 
-    % cpan WebService::8tracks
+    # listening
+    my $session = $api->create_session($mix_id);
+    $session->play;
+    ...
+    $session->next;
+    $session->skip;
 
-Download it, unpack it, then build it as per the usual:
-
-    % perl Makefile.PL
-    % make && make test
-
-Then install it:
-
-    % make install
-
-DOCUMENTATION
-
-WebService::8tracks documentation is available as in POD. So you can do:
-
-    % perldoc WebService::8tracks
-
-to read the documentation online with your favorite pager.
-
-motemen
+SEE ALSO
+    8tracks Playback API. <http://docs.google.com/View?id=dgm3wh3t_56vmhm7hjc>
