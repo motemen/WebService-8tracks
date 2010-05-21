@@ -1,0 +1,27 @@
+This is Perl module WebService::8tracks.
+
+INSTALLATION
+
+WebService::8tracks installation is straightforward. If your CPAN shell is set up,
+you should just be able to do
+
+    % cpan WebService::8tracks
+
+Download it, unpack it, then build it as per the usual:
+
+    % perl Makefile.PL
+    % make && make test
+
+Then install it:
+
+    % make install
+
+DOCUMENTATION
+
+WebService::8tracks documentation is available as in POD. So you can do:
+
+    % perldoc WebService::8tracks
+
+to read the documentation online with your favorite pager.
+
+motemen
