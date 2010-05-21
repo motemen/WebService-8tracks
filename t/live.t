@@ -32,5 +32,8 @@ my $session = $api->create_session($mix->{id});
 diag explain $session;
 
 diag explain $session->play;
+diag explain $session->skip;
+
+pass;
 
 done_testing;
