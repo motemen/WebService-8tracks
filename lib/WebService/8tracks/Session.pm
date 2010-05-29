@@ -19,6 +19,12 @@ has 'play_token', (
     required => 1,
 );
 
+has 'started', (
+    is  => 'rw',
+    isa => 'Bool',
+    default => sub { 0 },
+);
+
 __PACKAGE__->meta->make_immutable;
 
 no Any::Moose;
@@ -35,7 +41,12 @@ sub play {
 
 sub next {
     my $self = shift;
-    $self->execute('next');
+    if ($self->started) {
+        return $self->execute('next');
+    } else {
+        $self->started(1);
+        return $self->execute('play');
+    }
 }
 
 sub skip {
