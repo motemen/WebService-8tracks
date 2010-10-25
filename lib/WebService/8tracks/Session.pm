@@ -19,39 +19,65 @@ has 'play_token', (
     required => 1,
 );
 
-has 'started', (
+has '_started', (
     is  => 'rw',
     isa => 'Bool',
-    default => sub { 0 },
+    default => 0,
+);
+
+has 'at_beginning', (
+    is  => 'rw',
+    isa => 'Bool',
+    default => 0,
+);
+
+has 'at_end', (
+    is  => 'rw',
+    isa => 'Bool',
+    default => 0,
 );
 
 __PACKAGE__->meta->make_immutable;
 
 no Any::Moose;
 
+sub update_status {
+    my ($self, $res) = @_;
+
+    foreach (qw(at_beginning at_end)) {
+        $self->$_(!!$res->{set}->{$_}) if defined $res->{set}->{$_};
+    }
+}
+
 sub execute {
     my ($self, $command) = @_;
-    return $self->api->request_api(GET => "/sets/$self->{play_token}/$command.json", { mix_id => $self->mix_id });
+
+    my $res = $self->api->request_api(
+        GET => "sets/$self->{play_token}/$command",
+        { mix_id => $self->mix_id },
+    );
+    $self->update_status($res);
+    return $res;
 }
 
 sub play {
     my $self = shift;
-    $self->execute('play');
+    return $self->execute('play');
 }
 
 sub next {
     my $self = shift;
-    if ($self->started) {
+    if ($self->_started) {
         return $self->execute('next');
     } else {
-        $self->started(1);
+        $self->_started(1);
         return $self->execute('play');
     }
 }
 
 sub skip {
     my $self = shift;
-    $self->execute('skip');
+    return $self->execute('skip');
 }
 
 1;

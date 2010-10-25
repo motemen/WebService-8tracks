@@ -1,22 +1,50 @@
 package WebService::8tracks;
 use Any::Moose;
 
-has 'accesskey', (
+=pod
+
+=head1 NAME
+
+WebService::8tracks - Handle 8tracks API
+
+=head1 SYNOPSIS
+
+  use WebService::8tracks;
+
+  # explore
+  my $mixes = $api->mixes({ sort => 'recent' });
+
+  # listen
+  my $session = $api->create_session($mixes->{mixes}->[0]->{id});
+  my $res = $session->play;
+  my $media_url = $res->{set}->{url};
+  ...
+  $res = $session->next;
+  $res = $session->skip;
+
+=head1 DESCRIPTION
+
+WebService::8tracks provides Perl interface to 8tracks API.
+
+=cut
+
+has 'username', (
     is  => 'rw',
     isa => 'Str',
-    required => 1,
 );
 
-has 'secretkey', (
+has 'password', (
     is  => 'rw',
     isa => 'Str',
-    required => 1,
 );
 
 has 'user_agent', (
     is  => 'rw',
     isa => 'LWP::UserAgent',
-    default => sub { LWP::UserAgent->new },
+    default => sub {
+        require LWP::UserAgent;
+        return  LWP::UserAgent->new;
+    },
 );
 
 __PACKAGE__->meta->make_immutable;
@@ -28,28 +56,34 @@ our $VERSION = '0.01';
 use WebService::8tracks::Session;
 
 use Carp;
-use Encode qw(is_utf8);
 use JSON::XS qw(decode_json);
-use LWP::UserAgent;
-use URI::Escape qw(uri_escape);
+use URI::Escape qw(uri_escape uri_escape_utf8);
 use HTTP::Request;
+
+our $API_BASE_URL = 'http://8tracks.com/';
 
 sub api_url {
     my ($self, $path, $qparam) = @_;
-    my $url = "http://api.8tracks.com$path";
-    if ($qparam && scalar keys %$qparam) {
-        my @pairs;
-        while (my ($key, $value) = each %$qparam) {
-            my $pair = $key . '=';
-            if (is_utf8 $value) {
-                $pair .= uri_escape_utf8 $value;
-            } else {
-                $pair .= uri_escape $value;
+
+    my $url = "http://api.8tracks.com/$path.json";
+    if ($qparam) {
+        if (ref $qparam eq 'HASH' && scalar keys %$qparam) {
+            my @pairs;
+            while (my ($key, $value) = each %$qparam) {
+                my $pair = $key . '=';
+                if (utf8::is_utf8 $value) {
+                    $pair .= uri_escape_utf8 $value;
+                } else {
+                    $pair .= uri_escape $value;
+                }
+                push @pairs, $pair;
             }
-            push @pairs, $pair;
+            $url .= '?' . join '&', @pairs;
+        } else {
+            $url .= "?$qparam";
         }
-        $url .= '?' . join '&', @pairs;
     }
+
     return $url;
 }
 
@@ -58,7 +92,10 @@ sub request_api {
 
     my $url = $self->api_url($path, $qparam);
     my $req = HTTP::Request->new($method, $url);
-    $req->authorization_basic($self->accesskey, $self->secretkey);
+
+    if ($self->username && $self->password) {
+        $req->authorization_basic($self->username, $self->password);
+    }
 
     my $res = $self->user_agent->request($req);
     if ($res->is_error) {
@@ -68,53 +105,94 @@ sub request_api {
     decode_json $res->content;
 }
 
+=head1 METHODS
+
+=over 4
+
+=item mixes
+
+  my $res = $api->mixes({ page => 2 });
+  my $res = $api->mixes({ q => 'miles davis' });
+
+List mixes.
+
+=cut
+
 sub mixes {
     my ($self, $qparam) = @_;
-    return $self->request_api(GET => '/mixes.json', $qparam);
+    return $self->request_api(GET => 'mixes', $qparam);
 }
 
-sub mix_by_dj {
-    my ($self, $dj_name) = @_;
-    return $self->request_api(GET => "/$dj_name.json");
+=item user
+
+  my $res = $api->user(1);
+  my $res = $api->user('remi');
+
+View user info.
+
+=cut
+
+sub user {
+    my ($self, $user, $qparam) = @_;
+    return $self->request_api(GET => "users/$user", $qparam);
 }
 
-sub create_play_token {
+=item user_mixes
+
+  my $res = $api->user_mixes(2);
+  my $res = $api->user_mixes('dp', { view => 'liked' });
+
+List mixes made by a user.
+
+=cut
+
+sub user_mixes {
+    my ($self, $user, $qparam) = @_;
+    return $self->request_api(GET => "users/$user/mixes", $qparam);
+}
+
+sub _create_play_token {
     my $self = shift;
-    my $result = $self->request_api(GET => '/sets/new.json');
+    my $result = $self->request_api(GET => 'sets/new');
     return $result->{play_token};
 }
 
+=item create_session
+
+  my $session = $api->create_session($mix_id);
+  my $res = $session->play;
+  my $res = $session->next;
+  my $res = $session->skip;
+
+Start playing mix. Returns a WebService::8tracks::Session.
+
+=cut
+
 sub create_session {
     my ($self, $mix_id) = @_;
-    my $play_token = $self->create_play_token;
+
     return WebService::8tracks::Session->new(
         api => $self,
-        play_token => $play_token,
+        play_token => $self->_create_play_token,
         mix_id => $mix_id,
     );
 }
 
+=back
+
+=cut
+
 1;
 
 __END__
-
-=head1 NAME
-
-WebService::8tracks -
-
-=head1 SYNOPSIS
-
-  use WebService::8tracks;
-
-=head1 DESCRIPTION
-
-WebService::8tracks is
 
 =head1 AUTHOR
 
 motemen E<lt>motemen@gmail.comE<gt>
 
 =head1 SEE ALSO
+
+8tracks Playback API. <http://docs.google.com/Doc?docid=0AQstf4NcmkGwZGdia2c5ZjNfNDNjbW01Y2dmZw>
 
 =head1 LICENSE
 
