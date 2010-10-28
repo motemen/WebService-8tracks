@@ -54,6 +54,7 @@ no Any::Moose;
 our $VERSION = '0.01';
 
 use WebService::8tracks::Session;
+use WebService::8tracks::Response;
 
 use Carp;
 use JSON::XS qw(decode_json);
@@ -105,7 +106,8 @@ sub request_api {
         croak $res->code . ' ' . $res->message;
     }
 
-    decode_json $res->content;
+    my $api_response = decode_json $res->content;
+    return WebService::8tracks::Response->new($api_response);
 }
 
 =head1 METHODS

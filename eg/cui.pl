@@ -17,14 +17,23 @@ if ($ENV{'8TRACKS_USERNAME'} && $ENV{'8TRACKS_PASSWORD'}) {
 
 my $api = WebService::8tracks->new(%args);
 $api->user_agent->show_progress(1);
-my $session;
+
+my ($session, $result);
 
 while (1) {
     local $| = 1;
 
     my $prompt = '8tracks';
     $prompt .= " [$session->{play_token}]" if $session;
+
+    if ($result) {
+        print "\e[32m" if $result->is_success;
+        print "\e[31m" if $result->is_error;
+    }
+
     print "$prompt> ";
+
+    print "\e[m" if $result;
 
     my $line = <STDIN>;
     last unless defined $line;
@@ -32,7 +41,7 @@ while (1) {
 
     my ($method, @args) = split /\s+/, $line;
 
-    my $result = eval { ($session || $api)->$method(@args) };
+    $result = eval { ($session || $api)->$method(@args) };
     if ($@) {
         warn $@;
         next;
@@ -42,6 +51,7 @@ while (1) {
 
     if (ref $result eq 'WebService::8tracks::Session') {
         $session = $result;
+        undef $result;
     }
     if ($session && $session->at_end) {
         undef $session;
