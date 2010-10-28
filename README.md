@@ -18,6 +18,10 @@ SYNOPSIS
     $session->next;
     $session->skip;
 
+    # authenticated API
+    my $api = WebService::8tracks->new(username => $USERNAME, password => $PASSWORD);
+    $api->fav(23); # fav a track
+
 SEE ALSO
 --------
 
@@ -27,8 +31,6 @@ TODO
 ----
 
 - test
-- follow
-- fav
 
 LICENSE
 -------

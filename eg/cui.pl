@@ -6,7 +6,17 @@ use Data::Dumper;
 
 local $Data::Dumper::Indent = 1;
 
-my $api = WebService::8tracks->new;
+my %args;
+
+if ($ENV{'8TRACKS_USERNAME'} && $ENV{'8TRACKS_PASSWORD'}) {
+    %args = (
+        username => $ENV{'8TRACKS_USERNAME'},
+        password => $ENV{'8TRACKS_PASSWORD'},
+    );
+}
+
+my $api = WebService::8tracks->new(%args);
+$api->user_agent->show_progress(1);
 my $session;
 
 while (1) {

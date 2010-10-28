@@ -92,6 +92,9 @@ sub request_api {
 
     my $url = $self->api_url($path, $qparam);
     my $req = HTTP::Request->new($method, $url);
+    if ($method eq 'POST') {
+        $req->header(Content_Length => 0);
+    }
 
     if ($self->username && $self->password) {
         $req->authorization_basic($self->username, $self->password);
@@ -99,7 +102,7 @@ sub request_api {
 
     my $res = $self->user_agent->request($req);
     if ($res->is_error) {
-        croak $res->message;
+        croak $res->code . ' ' . $res->message;
     }
 
     decode_json $res->content;
@@ -176,6 +179,57 @@ sub create_session {
         play_token => $self->_create_play_token,
         mix_id => $mix_id,
     );
+}
+
+=item like / unlike / toggle_like
+
+  my $res = $api->toggle_like($mix_id);
+
+like/unlike/toggle_like a mix.
+
+=cut
+
+foreach my $like (qw(like unlike toggle_like)) {
+    my $code = sub {
+        my ($self, $mix_id) = @_;
+        return $self->request_api(POST => "mixies/$mix_id/$like");
+    };
+    no strict 'refs';
+    *$like = $code;
+}
+
+=item fav / unfav / toggle_fav
+
+  my $res = $api->fav($track_id);
+
+fav/unfav/toggle_fav a track.
+
+=cut
+
+foreach my $fav (qw(fav unfav toggle_fav)) {
+    my $code = sub {
+        my ($self, $track_id) = @_;
+        return $self->request_api(POST => "tracks/$track_id/$fav");
+    };
+    no strict 'refs';
+    *$fav = $code;
+}
+
+=item follow / unfollow / toggle_follow
+
+  my $res = $api->follow($user_id);
+
+follow/unfollow/toggle_follow a user.
+
+=cut
+
+foreach my $follow (qw(follow unfollow toggle_follow)) {
+    my $code = sub {
+        my ($self, $user_id) = @_;
+        return $self->request_api(POST => "users/$user_id/$follow");
+    };
+    no strict 'refs';
+    *$follow = $code;
 }
 
 =back
