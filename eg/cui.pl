@@ -8,15 +8,28 @@ local $Data::Dumper::Indent = 1;
 
 my %args;
 
-if ($ENV{'8TRACKS_USERNAME'} && $ENV{'8TRACKS_PASSWORD'}) {
+if ($ENV{'EIGHTTRACKS_USERNAME'} && $ENV{'EIGHTTRACKS_PASSWORD'}) {
     %args = (
-        username => $ENV{'8TRACKS_USERNAME'},
-        password => $ENV{'8TRACKS_PASSWORD'},
+        username => $ENV{'EIGHTTRACKS_USERNAME'},
+        password => $ENV{'EIGHTTRACKS_PASSWORD'},
     );
 }
 
 my $api = WebService::8tracks->new(%args);
 $api->user_agent->show_progress(1);
+
+if (my $res_file = $ENV{RECORD_RESPONSE}) {
+    open my $fh, '>>', $res_file;
+
+    $api->user_agent->add_handler(
+        response_done => sub {
+            my ($res, $ua, $h) = @_;
+            my $req = $res->request;
+            print $fh '@@ ', $req->method, ' ', $req->uri, "\n";
+            print $fh $res->as_string, "\n";
+        },
+    );
+}
 
 my ($session, $result);
 
@@ -57,3 +70,30 @@ while (1) {
         undef $session;
     }
 }
+
+__END__
+
+=pod
+
+=head1 NAME
+
+eg/cui.pl - Try API with console
+
+=head1 SYNOPSIS
+
+  % perl eg/cui.pl
+  8tracks> user_mixes youpy
+  ... [Response Dumped]
+  8tracks> create_session 7063
+  ... [Response Dumped]
+  8tracks [470046627]> play
+  ... [Response Dumped]
+  8tracks [470046627]> next
+  ... [Response Dumped]
+
+
+=head1 AUTHOR
+
+motemen E<lt>motemen@gmail.comE<gt>
+
+=cut

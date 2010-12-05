@@ -11,6 +11,8 @@ WebService::8tracks - Handle 8tracks API
 
   use WebService::8tracks;
 
+  my $api = WebService::8tracks->new(username => ..., password => ...);
+
   # explore
   my $mixes = $api->mixes({ sort => 'recent' });
 
@@ -25,6 +27,8 @@ WebService::8tracks - Handle 8tracks API
 =head1 DESCRIPTION
 
 WebService::8tracks provides Perl interface to 8tracks API.
+
+Currently, all response objects are almost naive hashrefs.
 
 =cut
 
@@ -113,6 +117,13 @@ sub request_api {
 =head1 METHODS
 
 =over 4
+
+=item new
+
+  my $api = WebService::8tracks->new([ username => ..., password => ... ]);
+
+Create API object. Pass username and password args to use methods
+that require login (like, fav, follow).
 
 =item mixes
 

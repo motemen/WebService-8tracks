@@ -62,6 +62,7 @@ sub execute {
 
 sub play {
     my $self = shift;
+    $self->_started(1);
     return $self->execute('play');
 }
 
