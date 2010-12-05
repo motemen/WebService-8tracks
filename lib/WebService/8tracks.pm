@@ -11,7 +11,7 @@ WebService::8tracks - Handle 8tracks API
 
   use WebService::8tracks;
 
-  my $api = WebService::8tracks->new(username => ..., password => ...);
+  my $api = WebService::8tracks->new;
 
   # explore
   my $mixes = $api->mixes({ sort => 'recent' });
@@ -23,6 +23,10 @@ WebService::8tracks - Handle 8tracks API
   ...
   $res = $session->next;
   $res = $session->skip;
+
+  # authenticated API
+  my $api = WebService::8tracks->new(username => ..., password => ...);
+  $api->fav(23); # fav a track
 
 =head1 DESCRIPTION
 
@@ -198,7 +202,7 @@ sub create_session {
 
   my $res = $api->toggle_like($mix_id);
 
-like/unlike/toggle_like a mix.
+Like/unlike/toggle_like a mix. Requires username and password.
 
 =cut
 
@@ -215,7 +219,7 @@ foreach my $like (qw(like unlike toggle_like)) {
 
   my $res = $api->fav($track_id);
 
-fav/unfav/toggle_fav a track.
+Fav/unfav/toggle_fav a track. Requires username and password.
 
 =cut
 
@@ -232,7 +236,7 @@ foreach my $fav (qw(fav unfav toggle_fav)) {
 
   my $res = $api->follow($user_id);
 
-follow/unfollow/toggle_follow a user.
+Follow/unfollow/toggle_follow a user. Requires username and password.
 
 =cut
 
