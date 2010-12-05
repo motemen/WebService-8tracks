@@ -69,6 +69,8 @@ use JSON::XS qw(decode_json);
 use URI::Escape qw(uri_escape uri_escape_utf8);
 use HTTP::Request;
 
+our @CARP_NOT = ( our @ISA, 'WebService::8tracks::Session' );
+
 our $API_BASE_URL = 'http://8tracks.com/';
 
 sub api_url {
