@@ -50,7 +50,10 @@ cmp_deeply $mix,
     superhashof({
         id   => 163823,
         slug => 'a-new-mission',
+        name => 'A new mission',
+        path => '/dp/a-new-mission',
         user => superhashof { slug => 'dp' },
+        tag_list_cache => 'electronic, chillwave, minimal',
     }),
     '$mixes->{mixes}->[0]';
 
@@ -66,14 +69,27 @@ sub like_a_track_response {
             set => superhashof {
                 at_beginning => bool(0),
                 at_end       => bool(0),
-                track        => superhashof({ url => ignore }),
+                track        => superhashof({
+                    url          => ignore,
+                    name         => ignore,
+                    performer    => ignore,
+                    release_name => ignore,
+                }),
                 %config,
             }
         });
 }
 
 cmp_deeply $session->play,
-    like_a_track_response(at_beginning => bool(1)),
+    like_a_track_response(
+        at_beginning => bool(1),
+        track        => superhashof({
+            url          => ignore,
+            name         => 'You',
+            performer    => 'Gold Panda',
+            release_name => 'Lucky Shiner',
+        }),
+    ),
     '$session->play';
 
 cmp_deeply $session->next,

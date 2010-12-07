@@ -2,10 +2,18 @@ use strict;
 use warnings;
 use lib 'lib';
 use WebService::8tracks;
+use AnyEvent::Util;
+use Perl6::Say;
 use Data::Dumper;
 
 my $api = WebService::8tracks->new;
-$api->user_agent->show_progress(1);
+$api->user_agent->add_handler(
+    request_send => sub {
+        my ($request) = @_;
+        say STDERR $request->method . ' ' . $request->uri;
+        return undef;
+    },
+);
 
 my $mix_id = shift or die "usage: $0 mix_id";
 
@@ -16,23 +24,25 @@ if ($mix_id =~ m(^[\w-]+/[\w-]+$)) {
     ($mix_id) = $res->decoded_content =~ /data-mix_id="(\d+)"/ or die 'Could not parse response';
 }
 
-my $session  =$api->create_session($mix_id);
+my $session = $api->create_session($mix_id);
 
 while (1) {
-    my $track = $session->next;
-    die Dumper $track->{errors} if $track->{errors};
+    my $res = $session->next;
+    die Dumper $res->{errors} if $res->{errors};
 
-    last if $track->{set}->{at_end};
+    if ($res->{set}->{at_end}) {
+        say STDERR 'Reached at mix end';
+        last;
+    }
 
-    my $media_url = $track->{set}->{track}->{url} or die 'Media URL not found';
-    my $res = $api->user_agent->get($media_url, ':content_cb' => sub { print STDOUT $_[0] });
+    my $track = $res->{set}->{track};
+    say STDERR "$track->{name} / $track->{performer} ($track->{url})";
 
-    # Sleep for some time in order not to write too much
-    # my $length = $res->header('Content-Length');
-    # my $secs = $length / (64 * 1_000 / 8); # assume 64kbps
-    # $secs -= 30;
-    # warn "\nWait for $secs secs\n";
-    # sleep $secs;
+    my $media_url = $track->{url} or die 'Media URL not found';
+    my $cv = run_cmd [ qw(ffmpeg -i), $media_url, qw(-f mp3 -) ], '2>' => sub { };
+
+    my $exit_code = $cv->recv;
+    die "ffmpeg exited with code $exit_code" if $exit_code != 0;
 }
 
 __END__
@@ -45,11 +55,17 @@ eg/stream.pl - Stream mix to stdout
 
 =head1 SYNOPSIS
 
+  % perl eg/stream.pl [user-id/mix-name or mix_id] | httpcat.pl --content-type audio/mp3 --port 12345
+
+Listen to http://yourhost:12345/ with your music player.
+
 Save https://gist.github.com/725025 as httpcat.pl.
 
-  % perl eg/stream.pl [mix_id or id/mix-name] | ffmpeg -i - -f mp3 - | httpcat.pl --content-type audio/mp3 --port 12345
+You should have ffmpeg installed.
 
-Listen to http://yourhost:12345/ with your stream player say, iTunes.
+=head1 SEE ALSO
+
+ffmpeg L<http://www.ffmpeg.org/>.
 
 =head1 AUTHOR
 
