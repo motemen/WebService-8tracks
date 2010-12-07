@@ -5,7 +5,7 @@ use Any::Moose;
 
 =head1 NAME
 
-WebService::8tracks - Handle 8tracks API
+WebService::8tracks - Handle 8tracks.com API
 
 =head1 SYNOPSIS
 
