@@ -143,7 +143,7 @@ sub mixes {
     return $self->request_api(GET => 'mixes', $qparam);
 }
 
-=item user
+=item user($id_or_name)
 
   my $res = $api->user(1);
   my $res = $api->user('remi');
@@ -177,7 +177,7 @@ sub _create_play_token {
     return $result->{play_token};
 }
 
-=item create_session
+=item create_session($mix_id)
 
   my $session = $api->create_session($mix_id);
   my $res = $session->play;
@@ -198,7 +198,7 @@ sub create_session {
     );
 }
 
-=item like / unlike / toggle_like
+=item like / unlike / toggle_like($mix_id)
 
   my $res = $api->toggle_like($mix_id);
 
@@ -215,7 +215,7 @@ foreach my $like (qw(like unlike toggle_like)) {
     *$like = $code;
 }
 
-=item fav / unfav / toggle_fav
+=item fav / unfav / toggle_fav($track_id)
 
   my $res = $api->fav($track_id);
 
@@ -232,7 +232,7 @@ foreach my $fav (qw(fav unfav toggle_fav)) {
     *$fav = $code;
 }
 
-=item follow / unfollow / toggle_follow
+=item follow / unfollow / toggle_follow($user_id)
 
   my $res = $api->follow($user_id);
 
