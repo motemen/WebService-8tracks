@@ -4,8 +4,6 @@ name 'WebService-8tracks';
 all_from 'lib/WebService/8tracks.pm';
 
 requires 'Any::Moose';
-requires 'Carp';
-requires 'Encode';
 requires 'JSON::XS';
 requires 'LWP::UserAgent';
 requires 'URI::Escape';
@@ -16,7 +14,6 @@ author_tests 'xt';
 
 test_requires 'Test::More';
 test_requires 'Test::Deep';
-test_requires 'Test::Fatal';
 test_requires 'Data::Section::Simple';
 
 auto_set_repository;

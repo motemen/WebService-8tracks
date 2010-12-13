@@ -3,7 +3,6 @@ use warnings;
 no  warnings qw(once redefine);
 use Test::More tests => 15;
 use Test::Deep qw(cmp_deeply isa methods superhashof noclass bool ignore);
-use Test::Fatal;
 
 use Data::Section::Simple qw(get_data_section);
 use LWP::UserAgent;
@@ -104,8 +103,8 @@ cmp_deeply $session->skip,
     like_a_track_response(skip_allowed => bool(0)),
     '$session->skip (2)';
 
-like exception { $session->skip },
-    qr/^403 Forbidden\b/,
+cmp_deeply $session->skip,
+    methods(is_success => bool(0)) & noclass(superhashof { status => '403 Forbidden' }),
     '$session->skip (3, not allowed)';
 
 cmp_deeply $session->next,

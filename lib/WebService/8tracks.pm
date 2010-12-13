@@ -64,7 +64,6 @@ our $VERSION = '0.01';
 use WebService::8tracks::Session;
 use WebService::8tracks::Response;
 
-use Carp;
 use JSON::XS qw(decode_json);
 use URI::Escape qw(uri_escape uri_escape_utf8);
 use HTTP::Request;
@@ -112,10 +111,6 @@ sub request_api {
     }
 
     my $res = $self->user_agent->request($req);
-    if ($res->is_error) {
-        croak $res->code . ' ' . $res->message;
-    }
-
     my $api_response = decode_json $res->content;
     return WebService::8tracks::Response->new($api_response);
 }

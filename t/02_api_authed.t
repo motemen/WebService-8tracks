@@ -1,9 +1,8 @@
 use strict;
 use warnings;
 no  warnings qw(once redefine);
-use Test::More 'no_plan';
+use Test::More tests => 9;
 use Test::Deep qw(cmp_deeply isa methods superhashof noclass bool ignore);
-use Test::Fatal;
 
 use Data::Section::Simple qw(get_data_section);
 use LWP::UserAgent;
@@ -31,7 +30,7 @@ my $api = new_ok 'WebService::8tracks', [ username => 'motemen', password => '..
 my $fav_res = $api->fav(109569);
 cmp_deeply $fav_res,
     isa('WebService::8tracks::Response')
-        & methods(is_success => 1)
+        & methods(is_success => bool(1))
         & noclass(superhashof {
             logged_in => bool(1),
             track => superhashof { name => 'Rinbu - Revolution', faved_by_current_user => bool(1) },
@@ -41,7 +40,7 @@ cmp_deeply $fav_res,
 my $unfav_res = $api->unfav(109569);
 cmp_deeply $unfav_res,
     isa('WebService::8tracks::Response')
-        & methods(is_success => 1)
+        & methods(is_success => bool(1))
         & noclass(superhashof {
             logged_in => bool(1),
             track => superhashof { name => 'Rinbu - Revolution', faved_by_current_user => bool(0) },
@@ -51,7 +50,7 @@ cmp_deeply $unfav_res,
 my $toggle_fav_res = $api->toggle_fav(109569);
 cmp_deeply $toggle_fav_res,
     isa('WebService::8tracks::Response')
-        & methods(is_success => 1)
+        & methods(is_success => bool(1))
         & noclass(superhashof {
             logged_in => bool(1),
             track => superhashof { name => 'Rinbu - Revolution', faved_by_current_user => bool(1) },
@@ -61,7 +60,7 @@ cmp_deeply $toggle_fav_res,
 my $toggle_follow_res = $api->toggle_follow('youpy');
 cmp_deeply $toggle_follow_res,
     isa('WebService::8tracks::Response')
-        & methods(is_success => 1)
+        & methods(is_success => bool(1))
         & noclass(superhashof {
             logged_in => bool(1),
             user => superhashof { slug => 'youpy', followed_by_current_user => bool(0) }, # I've been following before
@@ -71,7 +70,7 @@ cmp_deeply $toggle_follow_res,
 my $follow_res = $api->follow('youpy');
 cmp_deeply $follow_res,
     isa('WebService::8tracks::Response')
-        & methods(is_success => 1)
+        & methods(is_success => bool(1))
         & noclass(superhashof {
             logged_in => bool(1),
             user => superhashof { slug => 'youpy', followed_by_current_user => bool(1) },
@@ -81,7 +80,7 @@ cmp_deeply $follow_res,
 my $follow_self_res = $api->follow('motemen');
 cmp_deeply $follow_self_res,
     isa('WebService::8tracks::Response')
-        & methods(is_success => 0)
+        & methods(is_success => bool(0))
         & noclass(superhashof {
             status => '422 Unprocessable Entity',
             errors => ['There was a problem'],
@@ -91,7 +90,7 @@ cmp_deeply $follow_self_res,
 my $follow_nosuchuser_res = $api->follow('no_such_user');
 cmp_deeply $follow_nosuchuser_res,
     isa('WebService::8tracks::Response')
-        & methods(is_success => 0)
+        & methods(is_success => bool(0))
         & noclass(superhashof {
             status => '404 Not Found',
         }),
@@ -100,7 +99,7 @@ cmp_deeply $follow_nosuchuser_res,
 my $like_res = $api->like(7063);
 cmp_deeply $like_res,
     isa('WebService::8tracks::Response')
-        & methods(is_success => 1)
+        & methods(is_success => bool(1))
         & noclass(superhashof {
             logged_in => bool(1),
             mix => superhashof {
