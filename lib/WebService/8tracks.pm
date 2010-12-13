@@ -211,7 +211,7 @@ Like/unlike/toggle_like a mix. Requires username and password.
 foreach my $like (qw(like unlike toggle_like)) {
     my $code = sub {
         my ($self, $mix_id) = @_;
-        return $self->request_api(POST => "mixies/$mix_id/$like");
+        return $self->request_api(POST => "mixes/$mix_id/$like");
     };
     no strict 'refs';
     *$like = $code;
@@ -265,7 +265,7 @@ motemen E<lt>motemen@gmail.comE<gt>
 
 =head1 SEE ALSO
 
-8tracks Playback API. <http://docs.google.com/Doc?docid=0AQstf4NcmkGwZGdia2c5ZjNfNDNjbW01Y2dmZw>
+8tracks Playback API. L<http://docs.google.com/Doc?docid=0AQstf4NcmkGwZGdia2c5ZjNfNDNjbW01Y2dmZw>
 
 =head1 LICENSE
 
