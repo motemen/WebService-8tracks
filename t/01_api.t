@@ -104,7 +104,7 @@ cmp_deeply $session->skip,
     '$session->skip (2)';
 
 cmp_deeply $session->skip,
-    methods(is_success => bool(0)) & noclass(superhashof { status => '403 Forbidden' }),
+    methods(is_success => bool(0), is_client_error => bool(1)) & noclass(superhashof { status => '403 Forbidden' }),
     '$session->skip (3, not allowed)';
 
 cmp_deeply $session->next,

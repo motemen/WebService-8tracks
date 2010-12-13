@@ -8,6 +8,7 @@ requires 'JSON::XS';
 requires 'LWP::UserAgent';
 requires 'URI::Escape';
 requires 'HTTP::Request';
+requires 'HTTP::Status';
 
 tests 't/*.t';
 author_tests 'xt';

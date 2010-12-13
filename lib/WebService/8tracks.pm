@@ -5,7 +5,7 @@ use Any::Moose;
 
 =head1 NAME
 
-WebService::8tracks - Handle 8tracks.com API
+WebService::8tracks - Handle 8tracks API
 
 =head1 SYNOPSIS
 
@@ -14,12 +14,15 @@ WebService::8tracks - Handle 8tracks.com API
   my $api = WebService::8tracks->new;
 
   # explore
-  my $mixes = $api->mixes({ sort => 'recent' });
+  my $res = $api->mixes({ sort => 'recent' });
+  foreach my $mix (@{$res->{mixes}}) {
+      print "$mix->{user}->{name} $mix->{name} id=$mix->{id}\n";
+  }
 
   # listen
-  my $session = $api->create_session($mixes->{mixes}->[0]->{id});
+  my $session = $api->create_session($res->{mixes}->[0]->{id});
   my $res = $session->play;
-  my $media_url = $res->{set}->{url};
+  my $media_url = $res->{set}->{track}->{url};
   ...
   $res = $session->next;
   $res = $session->skip;
@@ -126,7 +129,7 @@ sub request_api {
 Create API object. Pass username and password args to use methods
 that require login (like, fav, follow).
 
-=item mixes
+=item mixes([ \%qparam ])
 
   my $res = $api->mixes({ page => 2 });
   my $res = $api->mixes({ q => 'miles davis' });
@@ -154,7 +157,7 @@ sub user {
     return $self->request_api(GET => "users/$user", $qparam);
 }
 
-=item user_mixes
+=item user_mixes($id_or_name[, \%qparam ])
 
   my $res = $api->user_mixes(2);
   my $res = $api->user_mixes('dp', { view => 'liked' });
